@@ -3,21 +3,24 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/t0nyandre/go-url-shortener/internal/config"
+	"github.com/t0nyandre/go-url-shortener/internal/logger"
 )
 
-var appConfig = flag.String("config", "./config/local.json", "path to config file")
-
 func main() {
+	var appConfig string
+
+	flag.StringVar(&appConfig, "config", "./config/locall.json", "path to config file")
 	flag.Parse()
 
-	cfg, err := config.Load(*appConfig)
+	l := logger.New()
+	cfg, err := config.Load(appConfig)
 	if err != nil {
-		log.Fatalf("Failed to load config file: %s", err)
+		l.Debug().Msgf("Error loading config file. Using defaults: %v", err)
+		cfg = config.Default()
 	}
 
 	router := chi.NewRouter()
@@ -25,8 +28,8 @@ func main() {
 		w.Write([]byte("hello world"))
 	})
 
-	fmt.Printf("Starting server on port %d\n", cfg.AppPort)
+	l.Info().Msgf("Starting server on port %d\n", cfg.AppPort)
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort), router); err != nil {
-		log.Fatalf("Failed to start server: %s", err)
+		l.Fatal().Msgf("Failed to start server: %s", err)
 	}
 }
