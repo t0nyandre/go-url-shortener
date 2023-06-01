@@ -7,12 +7,14 @@ import (
 	"github.com/gookit/validate"
 )
 
-const (
-	defaultAppPort = 4000
-	defaultAppHost = "localhost"
-	defaultAppEnv  = "development"
-	defaultAppName = "go-url-shortener"
-)
+func Default() *Config {
+	return &Config{
+		AppPort: 4000,
+		AppHost: "localhost",
+		AppEnv:  "development",
+		AppName: "go-url-shortener",
+	}
+}
 
 type Config struct {
 	AppPort int    `json:"app_port" env:"APP_PORT"`
@@ -30,12 +32,7 @@ func (c *Config) Validate() error {
 }
 
 func Load(file string) (*Config, error) {
-	c := &Config{
-		AppPort: defaultAppPort,
-		AppHost: defaultAppHost,
-		AppEnv:  defaultAppEnv,
-		AppName: defaultAppName,
-	}
+	c := Default()
 
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil {
