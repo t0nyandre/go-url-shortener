@@ -25,6 +25,7 @@ tags
 
 # Do not commit sensitive information
 .env
+docker.env
 .env.*
 !.env.example
 config/*
