@@ -1,0 +1,35 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    env_file:
+      - docker.env
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - dev
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    env_file:
+      - docker.env
+    ports:
+      - 5050:80
+    volumes:
+      - ./pgadmin_data:/var/lib/pgadmin
+    networks:
+      - dev
+    depends_on:
+      - postgres
+
+networks:
+  dev:
+    driver: bridge
+
+volumes:
+  pg_data:
+  pgadmin_data:
