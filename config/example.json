@@ -3,5 +3,9 @@
     "app_env": "development",
     "app_port": 4000,
     "app_host": "localhost",
+    "database": {
+        "driver": "postgres",
+        "dsn": "postgres://postgres:postgres@localhost:5432/go-url-shortener?sslmode=disable"
+    },
     "README": "Look at the Config struct in internal/config/config.go for more options"
 }
