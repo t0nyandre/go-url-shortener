@@ -17,10 +17,16 @@ func Default() *Config {
 }
 
 type Config struct {
-	AppPort int    `json:"app_port" env:"APP_PORT" validate:"required|numeric"`
-	AppHost string `json:"app_host" env:"APP_HOST" validate:"required|string"`
-	AppEnv  string `json:"app_env" env:"APP_ENV" validate:"required|string"`
-	AppName string `json:"app_name" env:"APP_NAME" validate:"required|string"`
+	AppPort  int       `json:"app_port" env:"APP_PORT" validate:"required|numeric"`
+	AppHost  string    `json:"app_host" env:"APP_HOST" validate:"required|string"`
+	AppEnv   string    `json:"app_env" env:"APP_ENV" validate:"required|string"`
+	AppName  string    `json:"app_name" env:"APP_NAME" validate:"required|string"`
+	Database *Database `json:"database" validate:"required"`
+}
+
+type Database struct {
+	Driver string `json:"driver" env:"DATABASE_DRIVER" validate:"required|string"`
+	DSN    string `json:"dsn" env:"DATABASE_DSN" validate:"required|string"`
 }
 
 func (c *Config) Validate() error {
