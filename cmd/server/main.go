@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/t0nyandre/go-url-shortener/internal/config"
 	"github.com/t0nyandre/go-url-shortener/internal/database/postgres"
+	"github.com/t0nyandre/go-url-shortener/internal/handler"
 	"github.com/t0nyandre/go-url-shortener/internal/logger"
 )
 
@@ -24,18 +24,15 @@ func main() {
 		cfg = config.Default()
 	}
 
-	_, err = postgres.New(l, cfg)
+	db, err := postgres.New(l, cfg)
 	if err != nil {
 		l.Fatal().Msgf("Failed to connect to database: %v", err)
 	}
 
-	router := chi.NewRouter()
-	router.Get("/", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte("hello world"))
-	})
+	router := handler.NewHandler(l, db, cfg).SetupHandlers()
 
-	l.Info().Msgf("Starting server on port %d\n", cfg.AppPort)
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort), router); err != nil {
+	l.Info().Msgf("Starting server on %s:%d", cfg.Host, cfg.Port)
+	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), router); err != nil {
 		l.Fatal().Msgf("Failed to start server: %s", err)
 	}
 }

@@ -1,8 +1,8 @@
 {
-    "app_name": "go-url-shortener",
-    "app_env": "development",
-    "app_port": 4000,
-    "app_host": "localhost",
+    "name": "go-url-shortener",
+    "port": 4000,
+    "host": "localhost",
+    "environment": "development",
     "database": {
         "driver": "postgres",
         "dsn": "postgres://postgres:postgres@localhost:5432/go-url-shortener?sslmode=disable"
