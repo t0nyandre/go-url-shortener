@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"github.com/t0nyandre/go-url-shortener/internal/config"
@@ -27,6 +29,11 @@ func NewHandler(logger *zerolog.Logger, db *sqlx.DB, cfg *config.Config) *resour
 
 func (res *resource) SetupHandlers() chi.Router {
 	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.URLFormat)
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 	// URL
 	r.Mount("/api/v1/url", url.RegisterHandlers(res.db, res.logger))
 	// Healthcheck

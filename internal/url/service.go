@@ -2,10 +2,11 @@ package url
 
 import (
 	"github.com/rs/zerolog"
+	"github.com/teris-io/shortid"
 )
 
 type Service interface {
-	Redirect(incoming *Url) (*Url, error)
+	Redirect(shortUrl string) (*Url, error)
 	Shorten(longUrl string) (*Url, error)
 }
 
@@ -15,13 +16,28 @@ type service struct {
 }
 
 // Redirect implements Service.
-func (*service) Redirect(incoming *Url) (*Url, error) {
-	panic("unimplemented")
+func (s *service) Redirect(shortUrl string) (*Url, error) {
+	url, err := s.repo.GetByShortUrl(shortUrl)
+	if err != nil {
+		return nil, err
+	}
+	return url, nil
 }
 
 // Shorten implements Service.
-func (*service) Shorten(longUrl string) (*Url, error) {
-	panic("unimplemented")
+func (s *service) Shorten(longUrl string) (*Url, error) {
+	urlStruct := &Url{LongUrl: longUrl}
+	shortid, err := shortid.Generate()
+	if err != nil {
+		return nil, err
+	}
+	urlStruct.ShortUrl = shortid
+
+	url, err := s.repo.Create(urlStruct)
+	if err != nil {
+		return nil, err
+	}
+	return url, nil
 }
 
 func NewService(repo Repository, logger *zerolog.Logger) Service {

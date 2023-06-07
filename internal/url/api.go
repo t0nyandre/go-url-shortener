@@ -29,8 +29,17 @@ type resource struct {
 	service Service
 }
 
+// TODO: Use render.Render
 func (res *resource) redirect(w http.ResponseWriter, req *http.Request) {
-	panic("unimplemented")
+	shortUrl := chi.URLParam(req, "url")
+	url, err := res.service.Redirect(shortUrl)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 page not found"))
+		return
+	}
+	w.WriteHeader(http.StatusMovedPermanently)
+	w.Header().Set("Location", url.LongUrl)
 }
 
 func (res *resource) shorten(w http.ResponseWriter, req *http.Request) {
