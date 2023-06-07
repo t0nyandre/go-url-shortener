@@ -1,6 +1,6 @@
 CONFIG_FILE ?= ./config/local.json
-DB_DSN := $(shell sed -n 's/.*"dsn": "\(.*\)",/\1/p' $(CONFIG_FILE))
-MIGRATE := docker run -v $(shell pwd)/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database $(DB_DSN)
+DB_DSN := $(shell sed -n 's|.*"dsn": *"\([^"]*\)".*|\1|p' $(CONFIG_FILE))
+MIGRATE := docker run -u $(shell id -u):$(shell id -g) -v $(shell pwd)/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database $(DB_DSN)
 
 
 .PHONY: run
