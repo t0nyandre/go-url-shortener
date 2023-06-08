@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	Redirect(shortUrl string) (*Url, error)
+	GetLongUrl(shortUrl string) (*Url, error)
 	Shorten(longUrl string) (*Url, error)
 }
 
@@ -15,8 +15,8 @@ type service struct {
 	logger *zerolog.Logger
 }
 
-// Redirect implements Service.
-func (s *service) Redirect(shortUrl string) (*Url, error) {
+// GetLongUrl implements Service.
+func (s *service) GetLongUrl(shortUrl string) (*Url, error) {
 	url, err := s.repo.GetByShortUrl(shortUrl)
 	if err != nil {
 		return nil, err

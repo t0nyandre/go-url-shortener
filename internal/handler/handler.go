@@ -35,9 +35,10 @@ func (res *resource) SetupHandlers() chi.Router {
 	r.Use(middleware.URLFormat)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 	// URL
-	r.Mount("/api/v1/url", url.RegisterHandlers(res.db, res.logger))
+	urlHandlers := url.RegisterHandlers(res.db, res.logger)
+	r.Mount("/v1/url", urlHandlers)
 	// Healthcheck
-	r.Get("/api/_hc", func(w http.ResponseWriter, _ *http.Request) {
+	r.Get("/_hc", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(fmt.Sprintf("%s: OK", res.cfg.Name)))
 	})
 	return r
