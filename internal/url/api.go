@@ -93,7 +93,7 @@ func (res *resource) shorten(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err := res.service.Shorten(urlStruct.LongUrl)
+	url, err := res.service.Shorten(urlStruct.LongUrl)
 	if err != nil {
 		render.Render(w, req, &Response{
 			HTTPStatusCode: http.StatusInternalServerError,
@@ -108,7 +108,12 @@ func (res *resource) shorten(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	render.Render(w, req, &Response{
+		HTTPStatusCode: http.StatusCreated,
+		Status:         "Success",
+		Errors:         []ErrResponse{},
+		Data:           url,
+	})
 }
 
 type ErrResponse struct {
