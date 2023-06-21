@@ -1,6 +1,10 @@
 package url
 
-import "time"
+import (
+	"time"
+
+	"github.com/gookit/validate"
+)
 
 type Url struct {
 	ID       int32  `json:"id" db:"id"`
@@ -11,4 +15,12 @@ type Url struct {
 	// UserID    string    `json:"user_id"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+func (u *Url) Validate() error {
+	v := validate.Struct(u)
+	if v.Validate() {
+		return nil
+	}
+	return v.Errors
 }
