@@ -1,7 +1,10 @@
 package url
 
 import (
+	"fmt"
+
 	"github.com/rs/zerolog"
+	"github.com/t0nyandre/go-url-shortener/internal/helpers"
 	"github.com/teris-io/shortid"
 )
 
@@ -25,8 +28,13 @@ func (s *service) GetLongUrl(shortUrl string) (*Url, error) {
 }
 
 // Shorten implements Service.
-func (s *service) Shorten(longUrl string) (*Url, error) {
+func (s *service) Shorten(incoming string) (*Url, error) {
+	longUrl := helpers.RemoveWhitespaces(incoming)
 	urlStruct := &Url{LongUrl: longUrl}
+	if urlStruct.LongUrl == "" {
+		return nil, fmt.Errorf("you cannot provide an empty url")
+	}
+
 	shortid, err := shortid.Generate()
 	if err != nil {
 		return nil, err
