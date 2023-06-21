@@ -40,7 +40,11 @@ func (res *resource) SetupHandlers() chi.Router {
 		r.Get("/{url}", urlHandlers.GetLongUrl)
 		r.Post("/", urlHandlers.Shorten)
 	})
-	r.Get("/r/{url}", urlHandlers.Redirect)
+
+	r.Route("/r", func(r chi.Router) {
+		r.Get("/", urlHandlers.Redirect)
+		r.Get("/{url}", urlHandlers.Redirect)
+	})
 
 	// Healthcheck
 	r.Get("/_hc", func(w http.ResponseWriter, _ *http.Request) {

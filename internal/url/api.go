@@ -26,6 +26,19 @@ type Resources struct {
 // TODO: Use render.Render
 func (res *Resources) Redirect(w http.ResponseWriter, req *http.Request) {
 	shortUrl := chi.URLParam(req, "url")
+	if shortUrl == "" {
+		render.Render(w, req, &Response{
+			HTTPStatusCode: http.StatusBadRequest,
+			Status:         "Failed",
+			Errors: []ErrResponse{
+				{
+					Code:         "BAD_REQUEST",
+					ErrorMessage: "URL ID is required",
+				},
+			},
+		})
+		return
+	}
 	url, err := res.service.GetLongUrl(shortUrl)
 	if err != nil {
 		render.Render(w, req, &Response{
