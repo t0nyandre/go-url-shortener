@@ -10,29 +10,21 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func RegisterHandlers(db *sqlx.DB, logger *zerolog.Logger) chi.Router {
+func RegisterHandlers(db *sqlx.DB, logger *zerolog.Logger) *Resources {
 	repository := NewRepository(db, logger)
 	service := NewService(repository, logger)
 
-	res := resource{db: db, logger: logger, service: service}
-
-	r := chi.NewRouter()
-	// TODO: Create a way to delete short URLs
-	r.Route("/{url}", func(r chi.Router) {
-		r.Get("/", res.getLongUrl)
-	})
-	r.Post("/", res.shorten)
-	return r
+	return &Resources{db: db, logger: logger, service: service}
 }
 
-type resource struct {
+type Resources struct {
 	db      *sqlx.DB
 	logger  *zerolog.Logger
 	service Service
 }
 
 // TODO: Use render.Render
-func (res *resource) Redirect(w http.ResponseWriter, req *http.Request) {
+func (res *Resources) Redirect(w http.ResponseWriter, req *http.Request) {
 	shortUrl := chi.URLParam(req, "url")
 	url, err := res.service.GetLongUrl(shortUrl)
 	if err != nil {
@@ -48,11 +40,10 @@ func (res *resource) Redirect(w http.ResponseWriter, req *http.Request) {
 		})
 		return
 	}
-	w.WriteHeader(http.StatusMovedPermanently)
-	w.Header().Set("Location", url.LongUrl)
+	http.Redirect(w, req, url.LongUrl, http.StatusMovedPermanently)
 }
 
-func (res *resource) getLongUrl(w http.ResponseWriter, req *http.Request) {
+func (res *Resources) GetLongUrl(w http.ResponseWriter, req *http.Request) {
 	shortUrl := chi.URLParam(req, "url")
 	url, err := res.service.GetLongUrl(shortUrl)
 	if err != nil {
@@ -75,7 +66,7 @@ func (res *resource) getLongUrl(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
-func (res *resource) shorten(w http.ResponseWriter, req *http.Request) {
+func (res *Resources) Shorten(w http.ResponseWriter, req *http.Request) {
 	urlStruct := &Url{}
 	decoder := json.NewDecoder(req.Body)
 
