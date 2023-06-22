@@ -55,6 +55,21 @@ func (res *Resources) Redirect(w http.ResponseWriter, req *http.Request) {
 		))
 		return
 	}
+	url, err = res.service.IncrementClicks(url)
+	if err != nil {
+		render.Render(w, req, common.NewResponse(
+			"Failed",
+			http.StatusInternalServerError,
+			[]common.ErrResponse{
+				{
+					Code:         "INTERNAL_SERVER_ERROR",
+					ErrorMessage: err.Error(),
+				},
+			},
+			nil,
+		))
+		return
+	}
 	http.Redirect(w, req, url.LongUrl, http.StatusMovedPermanently)
 }
 

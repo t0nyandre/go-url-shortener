@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	GetByShortUrl(shortUrl string) (*Url, error)
 	Create(url *Url) (*Url, error)
+	Update(url *Url) (*Url, error)
 }
 
 type repository struct {
@@ -31,6 +32,15 @@ func (repo *repository) Create(url *Url) (*Url, error) {
 			return nil, err
 		}
 		url.ID = id
+	}
+
+	return url, nil
+}
+
+func (repo *repository) Update(url *Url) (*Url, error) {
+	_, err := repo.db.Queryx(`UPDATE urls SET short_url = $1, long_url = $2, clicks = $3 WHERE id = $4 RETURNING id`, url.ShortUrl, url.LongUrl, url.Clicks, url.ID)
+	if err != nil {
+		return nil, err
 	}
 
 	return url, nil

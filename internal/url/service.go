@@ -11,6 +11,7 @@ import (
 type Service interface {
 	GetLongUrl(shortUrl string) (*Url, error)
 	Shorten(longUrl string) (*Url, error)
+	IncrementClicks(url *Url) (*Url, error)
 }
 
 type service struct {
@@ -21,6 +22,15 @@ type service struct {
 // GetLongUrl implements Service.
 func (s *service) GetLongUrl(shortUrl string) (*Url, error) {
 	url, err := s.repo.GetByShortUrl(shortUrl)
+	if err != nil {
+		return nil, err
+	}
+	return url, nil
+}
+
+func (s *service) IncrementClicks(url *Url) (*Url, error) {
+	url.Clicks++
+	url, err := s.repo.Update(url)
 	if err != nil {
 		return nil, err
 	}
