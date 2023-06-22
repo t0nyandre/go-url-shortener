@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
+	"github.com/t0nyandre/go-url-shortener/internal/common"
 )
 
 func RegisterHandlers(db *sqlx.DB, logger *zerolog.Logger) *Resources {
@@ -23,34 +24,35 @@ type Resources struct {
 	service Service
 }
 
-// TODO: Use render.Render
 func (res *Resources) Redirect(w http.ResponseWriter, req *http.Request) {
 	shortUrl := chi.URLParam(req, "url")
 	if shortUrl == "" {
-		render.Render(w, req, &Response{
-			HTTPStatusCode: http.StatusBadRequest,
-			Status:         "Failed",
-			Errors: []ErrResponse{
+		render.Render(w, req, common.NewResponse(
+			"Failed",
+			http.StatusBadRequest,
+			[]common.ErrResponse{
 				{
 					Code:         "BAD_REQUEST",
 					ErrorMessage: "URL ID is required",
 				},
 			},
-		})
+			nil,
+		))
 		return
 	}
 	url, err := res.service.GetLongUrl(shortUrl)
 	if err != nil {
-		render.Render(w, req, &Response{
-			HTTPStatusCode: http.StatusNotFound,
-			Status:         "Failed",
-			Errors: []ErrResponse{
+		render.Render(w, req, common.NewResponse(
+			"Failed",
+			http.StatusNotFound,
+			[]common.ErrResponse{
 				{
 					Code:         "NOT_FOUND",
 					ErrorMessage: err.Error(),
 				},
 			},
-		})
+			nil,
+		))
 		return
 	}
 	http.Redirect(w, req, url.LongUrl, http.StatusMovedPermanently)
@@ -60,23 +62,25 @@ func (res *Resources) GetLongUrl(w http.ResponseWriter, req *http.Request) {
 	shortUrl := chi.URLParam(req, "url")
 	url, err := res.service.GetLongUrl(shortUrl)
 	if err != nil {
-		render.Render(w, req, &Response{
-			HTTPStatusCode: http.StatusNotFound,
-			Status:         "Failed",
-			Errors: []ErrResponse{
+		render.Render(w, req, common.NewResponse(
+			"Failed",
+			http.StatusNotFound,
+			[]common.ErrResponse{
 				{
 					Code:         "NOT_FOUND",
 					ErrorMessage: err.Error(),
 				},
 			},
-		})
+			nil,
+		))
 		return
 	}
-	render.Render(w, req, &Response{
-		HTTPStatusCode: http.StatusOK,
-		Status:         "Success",
-		Data:           url,
-	})
+	render.Render(w, req, common.NewResponse(
+		"Success",
+		http.StatusOK,
+		[]common.ErrResponse{},
+		url,
+	))
 }
 
 func (res *Resources) Shorten(w http.ResponseWriter, req *http.Request) {
@@ -84,55 +88,40 @@ func (res *Resources) Shorten(w http.ResponseWriter, req *http.Request) {
 	decoder := json.NewDecoder(req.Body)
 
 	if err := decoder.Decode(urlStruct); err != nil {
-		render.Render(w, req, &Response{
-			HTTPStatusCode: http.StatusBadRequest,
-			Status:         "Failed",
-			Errors: []ErrResponse{
+		render.Render(w, req, common.NewResponse(
+			"Failed",
+			http.StatusBadRequest,
+			[]common.ErrResponse{
 				{
 					Code:         "BAD_REQUEST",
 					ErrorMessage: err.Error(),
 				},
 			},
-		})
+			nil,
+		))
 		return
 	}
 
 	url, err := res.service.Shorten(urlStruct.LongUrl)
 	if err != nil {
-		render.Render(w, req, &Response{
-			HTTPStatusCode: http.StatusInternalServerError,
-			Status:         "Failed",
-			Errors: []ErrResponse{
+		render.Render(w, req, common.NewResponse(
+			"Failed",
+			http.StatusInternalServerError,
+			[]common.ErrResponse{
 				{
 					Code:         "INTERNAL_SERVER_ERROR",
 					ErrorMessage: err.Error(),
 				},
 			},
-		})
+			nil,
+		))
 		return
 	}
 
-	render.Render(w, req, &Response{
-		HTTPStatusCode: http.StatusCreated,
-		Status:         "Success",
-		Errors:         []ErrResponse{},
-		Data:           url,
-	})
-}
-
-type ErrResponse struct {
-	Code         string `json:"code"`
-	ErrorMessage string `json:"message,omitempty"`
-}
-
-type Response struct {
-	HTTPStatusCode int           `json:"-"`
-	Status         string        `json:"status,omitempty"`
-	Errors         []ErrResponse `json:"errors,omitempty"`
-	Data           interface{}   `json:"data,omitempty"`
-}
-
-func (e *Response) Render(w http.ResponseWriter, req *http.Request) error {
-	render.Status(req, e.HTTPStatusCode)
-	return nil
+	render.Render(w, req, common.NewResponse(
+		"Success",
+		http.StatusCreated,
+		[]common.ErrResponse{},
+		url,
+	))
 }
