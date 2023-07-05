@@ -2,6 +2,7 @@ package url
 
 import (
 	"errors"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
@@ -11,6 +12,7 @@ type Repository interface {
 	GetByShortUrl(shortUrl string) (*Url, error)
 	Create(url *Url) (*Url, error)
 	Update(url *Url) (*Url, error)
+	IncrementClicks(url *Url) (*Url, error)
 }
 
 type repository struct {
@@ -20,6 +22,9 @@ type repository struct {
 
 // Create implements Repository.
 func (repo *repository) Create(url *Url) (*Url, error) {
+	url.CreatedAt = time.Now()
+	url.UpdatedAt = time.Now()
+
 	rows, err := repo.db.Queryx(`INSERT INTO urls (short_url, long_url, clicks) VALUES ($1, $2, $3) RETURNING id`, url.ShortUrl, url.LongUrl, url.Clicks)
 	if err != nil {
 		return nil, err
@@ -38,7 +43,18 @@ func (repo *repository) Create(url *Url) (*Url, error) {
 }
 
 func (repo *repository) Update(url *Url) (*Url, error) {
-	_, err := repo.db.Queryx(`UPDATE urls SET short_url = $1, long_url = $2, clicks = $3 WHERE id = $4 RETURNING id`, url.ShortUrl, url.LongUrl, url.Clicks, url.ID)
+	url.UpdatedAt = time.Now()
+	_, err := repo.db.Queryx(`UPDATE urls SET short_url = $1, long_url = $2, updated_at = $3 WHERE id = $4 RETURNING id`, url.ShortUrl, url.LongUrl, url.UpdatedAt, url.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return url, nil
+}
+
+func (repo *repository) IncrementClicks(url *Url) (*Url, error) {
+	url.Clicks++
+	_, err := repo.db.Queryx(`UPDATE urls SET clicks = $1 WHERE id = $2 RETURNING id`, url.Clicks, url.ID)
 	if err != nil {
 		return nil, err
 	}

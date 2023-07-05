@@ -29,8 +29,7 @@ func (s *service) GetLongUrl(shortUrl string) (*Url, error) {
 }
 
 func (s *service) IncrementClicks(url *Url) (*Url, error) {
-	url.Clicks++
-	url, err := s.repo.Update(url)
+	url, err := s.repo.IncrementClicks(url)
 	if err != nil {
 		return nil, err
 	}
